@@ -27,8 +27,8 @@ export async function postSignIn (req, res){
 		const user = await db.query(`SELECT * FROM users WHERE email = '${email}';`)
 		if (user.rows.length === 0) return res.status(404).send("Usuario não cadastrado")
 		console.log(user.rows)
-		//const passwordIsCorrect = bcrypt.compareSync(password, user.password)
-		//if (!passwordIsCorrect) return res.status(401).send("Senha incorreta")
+		const passwordIsCorrect = bcrypt.compareSync(password, user.rows[0].password)
+		if (!passwordIsCorrect) return res.status(401).send("Senha incorreta")
 
 		const token = uuid()
 		
@@ -49,7 +49,7 @@ export async function getUsers (req, res){
 	if(!token) return res.status(401).send("Envie o token na requisição")
 
 	try{
-		
+		res.sendStatus(200)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
