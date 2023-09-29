@@ -45,6 +45,7 @@ export async function getUrls (req, res){
 	try{
 		console.log(id);
 		const urls = await db.query(`SELECT * FROM urls WHERE id = $1;`,[id])
+		if (urls.rows.length == 0) return res.sendStatus(404)
 		console.log(urls.rows);
 		const body = urls.rows.map( b => {
 			const obj = {

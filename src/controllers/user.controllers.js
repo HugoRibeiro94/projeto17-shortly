@@ -10,8 +10,8 @@ export async function postSignUp (req, res){
 	try{
 		if (confirmPassword !== password ) return res.status(422).send("Senha confirmada incorreta")
 
-		const user = await db.query(`SELECT name FROM users WHERE name = '${name}';`)
-		if(user.rows.length > 0) return res.status(422).send("Nome já cadastrado")
+		const user = await db.query(`SELECT email FROM users WHERE email = '${email}';`)
+		if(user.rows.length > 0) return res.status(409).send("Email já cadastrado")
 
 		const u = await db.query(`INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${passwordHash}');`)
 		res.status(201).send(u)
@@ -25,10 +25,10 @@ export async function postSignIn (req, res){
 
 	try{
 		const user = await db.query(`SELECT * FROM users WHERE email = '${email}';`)
-		if (user.rows.length === 0) return res.status(422).send("Usuario não cadastrado")
+		if (user.rows.length === 0) return res.status(401).send("Usuario não cadastrado")
 		console.log(user.rows)
 		const passwordIsCorrect = bcrypt.compareSync(password, user.rows[0].password)
-		if (!passwordIsCorrect) return res.status(422).send("Senha incorreta")
+		if (!passwordIsCorrect) return res.status(401).send("Senha incorreta")
 
 		const token = uuid()
 		
