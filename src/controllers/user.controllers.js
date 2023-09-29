@@ -8,10 +8,10 @@ export async function postSignUp (req, res){
 	const passwordHash = bcrypt.hashSync(password, 10);
 
 	try{
-		if (confirmPassword !== password ) return res.status(409).send("Senha confirmada incorreta")
+		if (confirmPassword !== password ) return res.status(422).send("Senha confirmada incorreta")
 
 		const user = await db.query(`SELECT name FROM users WHERE name = '${name}';`)
-		if(user.rows.length > 0) return res.status(409).send("Nome já cadastrado")
+		if(user.rows.length > 0) return res.status(422).send("Nome já cadastrado")
 
 		const u = await db.query(`INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${passwordHash}');`)
 		res.status(201).send(u)
@@ -25,17 +25,17 @@ export async function postSignIn (req, res){
 
 	try{
 		const user = await db.query(`SELECT * FROM users WHERE email = '${email}';`)
-		if (user.rows.length === 0) return res.status(404).send("Usuario não cadastrado")
+		if (user.rows.length === 0) return res.status(422).send("Usuario não cadastrado")
 		console.log(user.rows)
 		const passwordIsCorrect = bcrypt.compareSync(password, user.rows[0].password)
-		if (!passwordIsCorrect) return res.status(401).send("Senha incorreta")
+		if (!passwordIsCorrect) return res.status(422).send("Senha incorreta")
 
 		const token = uuid()
 		
-		const obj ={ token:token , idUser: user._id, name: user.name}
+		const obj ={ token:token }
 
 		await db.query(`INSERT INTO sessions ("userID", token) VALUES ('${user.rows[0].id}', '${token}');`)
-		res.status(200).send(token)
+		res.status(200).send(obj)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
