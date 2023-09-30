@@ -72,6 +72,8 @@ export async function getUrlsOpen (req, res){
 }
 
 export async function deleteUrls(req,res){
+	const {id} = req.params
+
 	const { authorization } = req.headers
 
 	const token = authorization?.replace("Bearer ","")
@@ -79,7 +81,22 @@ export async function deleteUrls(req,res){
 	if(!token) return res.status(401).send("Envie o token na requisição")
 
 	try{
-		
+		console.log(id);
+
+		const session = await db.query(`SELECT * FROM sessions WHERE token = '${token}';`)
+		if(session.rows.length === 0) return res.status(401).send("Envie um token valido")
+		console.log(session.rows)
+
+		const urls = await db.query(`SELECT * FROM urls WHERE id = $1;`,[id])
+		if (urls.rows.length == 0) return res.status(404).send("Envie um id valido")
+		console.log(urls.rows);
+
+		if(session.rows[0].userID !== urls.rows[0].userID) return res.status(401).send("Envie um id valido")
+
+		if(!urls.rows[0].shortUrl ) return res.status(404).send("Não ha url válida")
+
+		await db.query(`DELETE FROM urls WHERE id = $1;`,[id])
+		res.sendStatus(204)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
