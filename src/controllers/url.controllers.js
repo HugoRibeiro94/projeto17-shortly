@@ -1,6 +1,4 @@
 import  db  from "../database/database.connection.js";
-import { v4 as uuid } from "uuid"
-import bcrypt from 'bcrypt'
 import { nanoid } from "nanoid";
 
 export async function postUrls (req, res){
@@ -63,9 +61,13 @@ export async function getUrls (req, res){
 }
 
 export async function getUrlsOpen (req, res){
-	
+	//Adicionar contagem de visitas
+	const {shortUrl} = req.params
 	try{
-		
+		const urls = await db.query(`SELECT * FROM urls WHERE "shortUrl" = $1;`,[shortUrl])
+		if (urls.rows.length == 0) return res.status(404).send("Envie uma url valida")
+		console.log(urls.rows);
+		res.redirect(`/urls/open/${shortUrl}`)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
