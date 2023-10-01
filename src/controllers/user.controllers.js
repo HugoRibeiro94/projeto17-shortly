@@ -49,6 +49,9 @@ export async function getUsers (req, res){
 	if(!token) return res.status(401).send("Envie o token na requisição")
 
 	try{
+		const session = await db.query(`SELECT * FROM sessions WHERE token = '${token}';`)
+		if(session.rows.length === 0) return res.status(401).send("Envie um token valido")
+		
 		res.sendStatus(200)
 	} catch (err) {
 		res.status(500).send(err.message)

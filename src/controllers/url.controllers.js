@@ -59,15 +59,21 @@ export async function getUrls (req, res){
 		res.status(500).send(err.message)
 	}
 }
-
+function hello(){
+	console.log("opa");
+}
 export async function getUrlsOpen (req, res){
 	//Adicionar contagem de visitas
 	const {shortUrl} = req.params
 	try{
 		const urls = await db.query(`SELECT * FROM urls WHERE "shortUrl" = $1;`,[shortUrl])
 		if (urls.rows.length == 0) return res.status(404).send("Envie uma url valida")
-		console.log(urls.rows);
-		res.redirect(`/urls/open/${shortUrl}`)
+		
+
+		await db.query(`INSERT INTO counts ("urlID","userID","visitCount") VALUES (${urls.rows[0].id},${urls.rows[0].userID},1);`)
+
+		res.redirect(302,`/urls/open/${shortUrl}`)
+		setTimeout(hello,5000)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
