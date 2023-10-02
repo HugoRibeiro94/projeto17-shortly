@@ -51,6 +51,9 @@ export async function getUsers (req, res){
 	try{
 		const session = await db.query(`SELECT * FROM sessions WHERE token = '${token}';`)
 		if(session.rows.length === 0) return res.status(401).send("Envie um token valido")
+		console.log(session.rows);
+
+		const name = await db.query(`SELECT * FROM users WHERE id = '${session.rows[0].userID}';`)
 
 		const count = await db.query(
 			`SELECT users.id, users.name, SUM("visitCount") AS "visitCount"
@@ -59,6 +62,7 @@ export async function getUsers (req, res){
 				WHERE users.id = ${session.rows[0].userID}
 				GROUP BY users.id;
 		`)
+		console.log(count.rows);
 
 		const urls =  await db.query(
 			`SELECT urls.id, urls."shortUrl", urls.url, SUM("visitCount") AS "visitCount"
@@ -67,10 +71,20 @@ export async function getUsers (req, res){
 				WHERE urls."userID"=${session.rows[0].userID}
 				GROUP BY urls.id;
 		`)
+		console.log(urls.rows);
 
+		const obj2 = {
+			id: session.rows[0].userID,
+			name: name.rows[0].name,
+			visitCount: 0,
+			shortenedUrls:[]
+		}
+
+		if(count.rows.length === 0 || urls.rows.length === 0) return res.send(obj2)
+		
 		const obj = {
 			id: session.rows[0].userID,
-			name: count.rows[0].name,
+			name: name.rows[0].name,
 			visitCount: count.rows[0].visitCount,
 			shortenedUrls: urls.rows
 		}

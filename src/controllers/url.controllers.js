@@ -64,7 +64,8 @@ export async function getUrlsOpen (req, res){
 
 		await db.query(`INSERT INTO counts ("urlID","userID","visitCount") VALUES (${urls.rows[0].id},${urls.rows[0].userID},1);`)
 
-		res.redirect(`/urls/open/${shortUrl}`)
+		res.sendStatus(302)
+		//res.redirect(`/urls/open/${shortUrl}`)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
