@@ -26,7 +26,7 @@ export async function postUrls (req, res){
 			}
 			return obj
 		})
-		console.log(urls.rows.shortUrl);
+	
 		res.status(201).send(body[0])
 	} catch (err) {
 		res.status(500).send(err.message)
@@ -64,7 +64,6 @@ export async function getUrlsOpen (req, res){
 
 		await db.query(`INSERT INTO counts ("urlID","userID","visitCount") VALUES (${urls.rows[0].id},${urls.rows[0].userID},1);`)
 
-		//res.sendStatus(302)
 		res.redirect(`/urls/open/${shortUrl}`)
 	} catch (err) {
 		res.status(500).send(err.message)
@@ -81,15 +80,11 @@ export async function deleteUrls(req,res){
 	if(!token) return res.status(401).send("Envie o token na requisição")
 
 	try{
-		console.log(id);
-
 		const session = await db.query(`SELECT * FROM sessions WHERE token = '${token}';`)
 		if(session.rows.length === 0) return res.status(401).send("Envie um token valido")
-		console.log(session.rows)
 
 		const urls = await db.query(`SELECT * FROM urls WHERE id = $1;`,[id])
 		if (urls.rows.length == 0) return res.status(404).send("Envie um id valido")
-		console.log(urls.rows);
 
 		if(session.rows[0].userID !== urls.rows[0].userID) return res.status(401).send("Envie um id valido")
 

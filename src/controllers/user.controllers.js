@@ -26,7 +26,7 @@ export async function postSignIn (req, res){
 	try{
 		const user = await db.query(`SELECT * FROM users WHERE email = '${email}';`)
 		if (user.rows.length === 0) return res.status(401).send("Usuario não cadastrado")
-		console.log(user.rows)
+		
 		const passwordIsCorrect = bcrypt.compareSync(password, user.rows[0].password)
 		if (!passwordIsCorrect) return res.status(401).send("Senha incorreta")
 
@@ -51,7 +51,6 @@ export async function getUsers (req, res){
 	try{
 		const session = await db.query(`SELECT * FROM sessions WHERE token = '${token}';`)
 		if(session.rows.length === 0) return res.status(401).send("Envie um token valido")
-		//console.log(session.rows[0]);
 
 		const count = await db.query(
 			`SELECT users.id, users.name, SUM("visitCount") AS "visitCount"
@@ -60,7 +59,6 @@ export async function getUsers (req, res){
 				WHERE users.id = ${session.rows[0].userID}
 				GROUP BY users.id;
 		`)
-		//console.log(count.rows[0]);
 
 		const urls =  await db.query(
 			`SELECT urls.id, urls."shortUrl", urls.url, SUM("visitCount") AS "visitCount"
@@ -69,16 +67,13 @@ export async function getUsers (req, res){
 				WHERE urls."userID"=${session.rows[0].userID}
 				GROUP BY urls.id;
 		`)
-		//console.log(urls.rows.length);
 
 		const obj = {
-			id: count.rows[0].id,
+			id: session.rows[0].userID,
 			name: count.rows[0].name,
 			visitCount: count.rows[0].visitCount,
 			shortenedUrls: urls.rows
 		}
-
-		//console.log(obj);
 
 		res.status(200).send(obj)
 	} catch (err) {
