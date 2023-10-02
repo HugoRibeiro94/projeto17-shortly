@@ -80,7 +80,12 @@ export async function getUsers (req, res){
 			id: session.rows[0].userID,
 			name: name.rows[0].name,
 			visitCount: 0,
-			shortenedUrls:urlsUser.rows
+			shortenedUrls:[{
+				id: urlsUser.rows.id,
+				shortUrl:  urlsUser.rows.shortUrl,
+				url:  urlsUser.rows.url,
+				visitCount: 0
+			}]
 		}
 
 		if(count.rows.length === 0 || urls.rows.length === 0) return res.send(obj2)
