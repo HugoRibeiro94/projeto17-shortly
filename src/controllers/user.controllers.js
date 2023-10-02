@@ -60,7 +60,7 @@ export async function getUsers (req, res){
 				WHERE users.id = ${session.rows[0].userID}
 				GROUP BY users.id;
 		`)
-		//console.log(count.rows[0]);
+		console.log(count.rows[0]);
 
 		const urls =  await db.query(
 			`SELECT urls.id, urls."shortUrl", urls.url, SUM("visitCount") AS "visitCount"
@@ -69,14 +69,16 @@ export async function getUsers (req, res){
 				WHERE urls."userID"=${session.rows[0].userID}
 				GROUP BY urls.id;
 		`)
-		//console.log(urls.rows.length);
+		console.log(urls.rows.length);
 
 		const obj = {
-			...count.rows[0],
+			id: count.rows[0].id,
+			name: count.rows[0].name,
+			visitCount: count.rows[0].visitCount,
 			shortenedUrls: urls.rows
 		}
 
-		//console.log(obj);
+		console.log(obj);
 
 		res.status(200).send(obj)
 	} catch (err) {
