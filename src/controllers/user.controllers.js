@@ -60,7 +60,7 @@ export async function getUsers (req, res){
 				WHERE users.id = ${session.rows[0].userID}
 				GROUP BY users.id;
 		`)
-		console.log(count.rows[0]);
+		//console.log(count.rows[0]);
 
 		const urls =  await db.query(
 			`SELECT urls.id, urls."shortUrl", urls.url, SUM("visitCount") AS "visitCount"
@@ -69,7 +69,7 @@ export async function getUsers (req, res){
 				WHERE urls."userID"=${session.rows[0].userID}
 				GROUP BY urls.id;
 		`)
-		console.log(urls.rows.length);
+		//console.log(urls.rows.length);
 
 		const obj = {
 			id: count.rows[0].id,
@@ -78,7 +78,7 @@ export async function getUsers (req, res){
 			shortenedUrls: urls.rows
 		}
 
-		console.log(obj);
+		//console.log(obj);
 
 		res.status(200).send(obj)
 	} catch (err) {
@@ -89,18 +89,27 @@ export async function getUsers (req, res){
 export async function getRanking(req,res){
 	
 	try{
+		
+		const usersRank = await db.query(`
+			SELECT
+				users.id AS "id",
+				users.name AS "name",
+				COUNT(DISTINCT urls.id) AS "linksCount",
+				SUM(counts."visitCount") AS "visitCount"
+			FROM
+				users
+			LEFT JOIN
+				urls ON users.id = urls."userID"
+			LEFT JOIN
+				counts ON urls.id = counts."urlID"
+			GROUP BY
+				users.id, users.name 
+			ORDER BY
+				"visitCount" DESC
+			LIMIT 10;`
+		)
 
-
-		const linksCount = await db.query(`SELECT COUNT(*) FROM urls`)
-
-		const urls =  await db.query(
-			`SELECT urls.id, urls."shortUrl", urls.url, SUM("visitCount") AS "visitCount"
-				FROM counts
-				JOIN urls ON urls.id = counts."urlID"
-				GROUP BY urls.id;
-		`)
-		console.log(urls.rows.length);
-
+		res.status(200).send(usersRank.rows)
 	} catch (err) {
 		res.status(500).send(err.message)
 	}
